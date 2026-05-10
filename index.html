@@ -120,6 +120,20 @@ main p { color: white; line-height: 1.6; }
 #resetBtn:hover { background: #45a049; }
 .game-controls { color: rgba(255, 255, 255, 0.8); font-size: 14px; }
 #status { font-size: 20px; font-weight: bold; }
+.usage-panel {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.usage-panel h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #66BB6A;
+}
 </style>
 </head>
 <body>
@@ -141,6 +155,10 @@ main p { color: white; line-height: 1.6; }
     <div class="game-controls">
       <p>Click on a cell to place your mark. First to get 3 in a row wins!</p>
     </div>
+    <div class="usage-panel" id="usagePanel">
+      <h3>How to Play</h3>
+      <p id="usageText">Loading...</p>
+    </div>
   </div>
 </main>
 <script>
@@ -150,11 +168,20 @@ let gamesData = {};
 
 async function loadGames() {
   try {
-    const response = await fetch('../data/links/games.json');
+    const response = await fetch('https://zihaohong.github.io/data/links/games.json');
     gamesData = await response.json();
     renderGamesDropdown();
+    renderUsagePanel();
   } catch (error) {
     console.error('Error loading games:', error);
+  }
+}
+
+function renderUsagePanel() {
+  const langData = gamesData[currentLang] || gamesData['en'];
+  const currentGame = langData.games.find(game => game.link === 'tic-tac-toe-game/');
+  if (currentGame && currentGame.usage) {
+    document.getElementById('usageText').textContent = currentGame.usage;
   }
 }
 
@@ -168,7 +195,7 @@ function renderGamesDropdown() {
   }
 
   container.innerHTML = langData.games.map(game => {
-    const isCurrent = game.link === 'tic-tac-toe/';
+    const isCurrent = game.link === 'tic-tac-toe-game/';
     return `<a href="${game.link}" class="${isCurrent ? 'current' : ''}">${game.title}</a>`;
   }).join('');
 }
