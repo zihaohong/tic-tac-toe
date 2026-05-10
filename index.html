@@ -118,7 +118,6 @@ main p { color: white; line-height: 1.6; }
   transition: background 0.3s;
 }
 #resetBtn:hover { background: #45a049; }
-.game-controls { color: rgba(255, 255, 255, 0.8); font-size: 14px; }
 #status { font-size: 20px; font-weight: bold; }
 .usage-panel {
   background: rgba(255, 255, 255, 0.1);
@@ -152,9 +151,6 @@ main p { color: white; line-height: 1.6; }
       <p id="status">Player X's turn</p>
       <button id="resetBtn">Reset Game</button>
     </div>
-    <div class="game-controls">
-      <p>Click on a cell to place your mark. First to get 3 in a row wins!</p>
-    </div>
     <div class="usage-panel" id="usagePanel">
       <h3>How to Play</h3>
       <p id="usageText">Loading...</p>
@@ -179,7 +175,7 @@ async function loadGames() {
 
 function renderUsagePanel() {
   const langData = gamesData[currentLang] || gamesData['en'];
-  const currentGame = langData.games.find(game => game.link === 'tic-tac-toe-game/');
+  const currentGame = langData.games.find(game => game.link.includes('tic-tac-toe-game'));
   if (currentGame && currentGame.usage) {
     document.getElementById('usageText').textContent = currentGame.usage;
   }
@@ -194,8 +190,9 @@ function renderGamesDropdown() {
     return;
   }
 
+  const currentUrl = window.location.href;
   container.innerHTML = langData.games.map(game => {
-    const isCurrent = game.link === 'tic-tac-toe-game/';
+    const isCurrent = currentUrl.startsWith(game.link);
     return `<a href="${game.link}" class="${isCurrent ? 'current' : ''}">${game.title}</a>`;
   }).join('');
 }
