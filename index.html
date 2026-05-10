@@ -15,8 +15,11 @@ body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667e
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 50px;
 }
+.nav-left { display: flex; align-items: center; }
+.nav-right { display: flex; align-items: center; }
 .menu-btn {
   background: none;
   border: none;
@@ -30,6 +33,17 @@ body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667e
   height: 100%;
 }
 .menu-btn:hover { opacity: 0.8; }
+.lang-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.lang-btn:hover { background: rgba(255, 255, 255, 0.25); }
 .hamburger {
   display: flex;
   flex-direction: column;
@@ -148,10 +162,15 @@ main p { color: white; line-height: 1.6; }
 </head>
 <body>
 <div class="game-nav">
-  <button class="menu-btn" id="menuBtn">
-    <div class="hamburger"><span></span><span></span><span></span></div>
-    <span class="menu-label">Games</span>
-  </button>
+  <div class="nav-left">
+    <button class="menu-btn" id="menuBtn">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <span class="menu-label">Games</span>
+    </button>
+  </div>
+  <div class="nav-right">
+    <button class="lang-btn" id="langBtn">EN</button>
+  </div>
   <div class="games-dropdown" id="gamesDropdown"></div>
 </div>
 <main>
@@ -211,10 +230,19 @@ function renderGamesDropdown() {
 function detectLanguage() {
   const lang = navigator.language.toLowerCase();
   if (lang.startsWith('zh')) { currentLang = 'zh'; }
+  document.getElementById('langBtn').textContent = currentLang === 'en' ? 'EN' : '中文';
 }
 
 detectLanguage();
 loadGames();
+
+// Language toggle
+document.getElementById('langBtn').addEventListener('click', function() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  this.textContent = currentLang === 'en' ? 'EN' : '中文';
+  renderGamesDropdown();
+  renderUsagePanel();
+});
 
 // Toggle dropdown
 document.getElementById('menuBtn').addEventListener('click', function() {
