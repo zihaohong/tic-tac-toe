@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+
+/* Collapsible game menu */
+.game-nav {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 50px;
+}
+.menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  height: 100%;
+}
+.menu-btn:hover { opacity: 0.8; }
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 22px;
+}
+.hamburger span {
+  display: block;
+  height: 2px;
+  background: white;
+  border-radius: 1px;
+  transition: all 0.3s;
+}
+.menu-btn.open .hamburger span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.menu-btn.open .hamburger span:nth-child(2) { opacity: 0; }
+.menu-btn.open .hamburger span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+
+.games-dropdown {
+  display: none;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  background: rgba(30, 30, 60, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 10px 0;
+  z-index: 100;
+  animation: slideDown 0.2s ease;
+}
+.games-dropdown.open { display: block; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.games-dropdown a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.games-dropdown a:hover { background: rgba(255, 255, 255, 0.15); }
+.games-dropdown a.current {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+  border-left: 3px solid #66BB6A;
+}
+
+main { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+main h1 { color: white; margin-bottom: 20px; }
+main p { color: white; line-height: 1.6; }
+.game-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px;
+  border-radius: 10px;
+}
+.cell {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 5px;
+  font-size: 48px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cell:hover { background: rgba(255, 255, 255, 1); }
+.cell.winner { background: #4CAF50; color: white; }
+.game-info { display: flex; align-items: center; gap: 20px; color: white; font-size: 18px; }
+#resetBtn {
+  padding: 10px 25px;
+  font-size: 16px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#resetBtn:hover { background: #45a049; }
+.game-controls { color: rgba(255, 255, 255, 0.8); font-size: 14px; }
+#status { font-size: 20px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="game-nav">
+  <button class="menu-btn" id="menuBtn">
+    <div class="hamburger"><span></span><span></span><span></span></div>
+    <span class="menu-label">Games</span>
+  </button>
+  <div class="games-dropdown" id="gamesDropdown"></div>
+</div>
+<main>
+  <h1>Tic Tac Toe</h1>
+  <div class="game-container">
+    <div class="board" id="board"></div>
+    <div class="game-info">
+      <p id="status">Player X's turn</p>
+      <button id="resetBtn">Reset Game</button>
+    </div>
+    <div class="game-controls">
+      <p>Click on a cell to place your mark. First to get 3 in a row wins!</p>
+    </div>
+  </div>
+</main>
+<script>
+// Navigator logic
+let currentLang = 'en';
+let gamesData = {};
+
+async function loadGames() {
+  try {
+    const response = await fetch('../data/links/games.json');
+    gamesData = await response.json();
+    renderGamesDropdown();
+  } catch (error) {
+    console.error('Error loading games:', error);
+  }
+}
+
+function renderGamesDropdown() {
+  const container = document.getElementById('gamesDropdown');
+  const langData = gamesData[currentLang] || gamesData['en'];
+
+  if (!langData.games || langData.games.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = langData.games.map(game => {
+    const isCurrent = game.link === 'tic-tac-toe/';
+    return `<a href="${game.link}" class="${isCurrent ? 'current' : ''}">${game.title}</a>`;
+  }).join('');
+}
+
+function detectLanguage() {
+  const lang = navigator.language.toLowerCase();
+  if (lang.startsWith('zh')) { currentLang = 'zh'; }
+}
+
+detectLanguage();
+loadGames();
+
+// Toggle dropdown
+document.getElementById('menuBtn').addEventListener('click', function() {
+  this.classList.toggle('open');
+  document.getElementById('gamesDropdown').classList.toggle('open');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.game-nav')) {
+    document.getElementById('menuBtn').classList.remove('open');
+    document.getElementById('gamesDropdown').classList.remove('open');
+  }
+});
+
+// Tic Tac Toe Game Logic
+const TicTacToe = {
+  board: [],
+  currentPlayer: 'X',
+  gameOver: false,
+
+  init: function() {
+    this.board = Array(9).fill(null);
+    this.currentPlayer = 'X';
+    this.gameOver = false;
+    this.renderBoard();
+    this.bindEvents();
+    this.updateStatus();
+  },
+
+  renderBoard: function() {
+    const boardEl = document.getElementById('board');
+    boardEl.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('button');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+      cell.textContent = this.board[i] || '';
+      boardEl.appendChild(cell);
+    }
+  },
+
+  bindEvents: function() {
+    document.getElementById('board').addEventListener('click', (e) => {
+      if (e.target.classList.contains('cell')) {
+        this.handleCellClick(parseInt(e.target.dataset.index));
+      }
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => { this.init(); });
+  },
+
+  handleCellClick: function(index) {
+    if (this.gameOver || this.board[index]) return;
+    this.board[index] = this.currentPlayer;
+    this.renderBoard();
+    if (this.checkWin()) {
+      this.gameOver = true;
+      document.getElementById('status').textContent = `Player ${this.currentPlayer} wins!`;
+      this.highlightWinner();
+    } else if (this.board.every(cell => cell !== null)) {
+      this.gameOver = true;
+      document.getElementById('status').textContent = "It's a draw!";
+    } else {
+      this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+      this.updateStatus();
+    }
+  },
+
+  checkWin: function() {
+    const lines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for (const line of lines) {
+      const [a,b,c] = line;
+      if (this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) {
+        this.winningLine = line;
+        return true;
+      }
+    }
+    return false;
+  },
+
+  highlightWinner: function() {
+    if (this.winningLine) {
+      const cells = document.querySelectorAll('.cell');
+      this.winningLine.forEach(index => { cells[index].classList.add('winner'); });
+    }
+  },
+
+  updateStatus: function() {
+    document.getElementById('status').textContent = `Player ${this.currentPlayer}'s turn`;
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => TicTacToe.init());
+</script>
+</body>
+</html>
